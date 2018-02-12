@@ -1,4 +1,5 @@
 ﻿@model IEnumerable<ChartJsLearning.Models.Podatki>
+@using System.Collections.Generic
 
 @{
     ViewBag.Title = "Index";
@@ -6,7 +7,7 @@
 
 <h2>Index</h2>
 
-<canvas id="bar-chart" width="800" height="450"></canvas>
+<canvas id="bar-chart" width="800" height="500"></canvas>
 
 <p>
     @Html.ActionLink("Create New", "Create")
@@ -25,45 +26,118 @@
         <th></th>
     </tr>
 
-@foreach (var item in Model) {
-    <tr>
-        <td>
-            @Html.DisplayFor(modelItem => item.Datum)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.Temperatura)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.Vlaga)
-        </td>
-        <td>
-            @Html.ActionLink("Edit", "Edit", new { id=item.Id }) |
-            @Html.ActionLink("Details", "Details", new { id=item.Id }) |
-            @Html.ActionLink("Delete", "Delete", new { id=item.Id })
-        </td>
-    </tr>
-}
+    @foreach (var item in Model)
+    {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.Datum)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Temperatura)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Vlaga)
+            </td>
+            <td>
+                @Html.ActionLink("Edit", "Edit", new { id = item.Id }) |
+                @Html.ActionLink("Details", "Details", new { id = item.Id }) |
+                @Html.ActionLink("Delete", "Delete", new { id = item.Id })
+            </td>
+        </tr>
+    }
 
 </table>
 
 <script>
+    var podatki = @Html.Raw(Json.Encode(Model));
+    var temp = podatki.map(function (item) {
+        return item.Temperatura
+    });
+    var datumi = podatki.map(function (item) {
+        var x = item.Datum.toString();
+        var konc = x.substr(6, 13);
+        var date = new Date(parseInt(konc));
+        var dateString = date.toDateString();
+        return dateString;
+    });
+
+    var vlage = podatki.map(function (item) {
+        return item.Vlaga;
+    });
     new Chart(document.getElementById("bar-chart"), {
         type: 'bar',
         data: {
-            labels: ["Africa", "Asia", "Europe", "Latin America", "North America"],
+            labels:  datumi,
             datasets: [
+            {
+                type: 'line',
+                label: "Temperatura",
+                backgroundColor: 'red',
+                borderColor: '#DC143C',
+                borderWidth: 2,
+                data: temp,
+                fill: false,
+                yAxisID: 'yaxis2'
+            },
                 {
-                    label: "Population (millions)",
-                    backgroundColor: ["#3e95cd", "#8e5ea2", "#3cba9f", "#e8c3b9", "#c45850"],
-                    data: ViewData["temp"]
+                    type: 'bar',
+                    label: "Vlaga",
+                    borderColor: '#00008B',
+                    backgroundColor: "#3e95cd",
+                    borderWidth: 2,
+                    data: vlage,
+                    yAxisID: 'yaxis1'
                 }
+                
             ]
         },
         options: {
-            legend: { display: false },
+            responsive: true,
+            scales: {
+                yAxes: [{
+                    display: true,
+                    scaleLabel: {
+                        display: true,
+                        labelString: 'Vlaga'
+                    },
+                    type: 'linear',
+                    id: 'yaxis1',
+                    display: true,
+                    position: 'left',
+                    ticks: {
+                        max: 100,
+                        beginAtZero: true,
+                        callback: function (value, index, values) {
+                            return value + '%';
+                        }
+                    },
+                },
+                    {
+                        display: true,
+                        scaleLabel: {
+                            display: true,
+                            labelString: 'Temperatura'
+                        },
+                        type: 'linear',
+                        id: 'yaxis2',
+                        display: true,
+                        position: 'right',
+                        ticks: {
+                            max: 40,
+                            beginAtZero: true,
+                            callback: function (value, index, values) {
+                                return value + '°C';
+                            }
+                        },
+                        gridLines: {
+                            drawOnChartArea: false,
+                        }
+                    }]
+            },
+            legend: { display: true },
             title: {
                 display: true,
-                text: 'Predicted world population (millions) in 2050'
+                text: 'Vlaga in Temperatura'
             }
         }
     });

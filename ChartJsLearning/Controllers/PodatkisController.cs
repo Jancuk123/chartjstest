@@ -29,7 +29,7 @@ namespace ChartJsLearning.Controllers
             var temp = (from t in db.Podatkis
                         orderby t.Datum
                         select t.Temperatura).ToList();
-            ViewData["temp"] = temp;
+            ViewData["vlaga"] = vlaga as List<decimal>;
 
             return View(podatki);
         }
